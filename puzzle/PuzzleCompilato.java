@@ -1,0 +1,140 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+
+public class PuzzleCompilato {
+
+    private static class Tessera{
+        int sgsd[] = new int[4]; // sopra sotto sinistra destra
+        String incisione;
+        public Tessera(int upper, int under, int left, int right, String incisione) {
+            sgsd[0] = upper;
+            sgsd[1] = under;
+            sgsd[2] = left;
+            sgsd[3] = right;
+            this.incisione = incisione;
+        }
+    }
+
+    private static interface Cercatore{
+        abstract int cerca(Tessera[] tessere, int dove, int cosa);
+    }
+
+    public static void main(String[] args) throws IOException {
+        long start,stop;
+        Cercatore cLineare = (Tessera[] tessere, int dove, int cosa) -> {
+            for(int i=0; i<tessere.length; i++) {
+                if(tessere[i].sgsd[dove]==cosa) {
+                    return i;
+                }
+            }
+            return -1;
+        };
+        Cercatore cBinaria = (Tessera[] tessere, int dove, int cosa) -> {
+            int inizio = 0;
+            int fine = tessere.length;
+            int medio;
+            while (inizio<=fine){
+                medio = (inizio+fine)/2;
+                if (tessere[medio].sgsd[dove] == cosa){
+                    return medio; // brutto!
+                } else {
+                    if(tessere[medio].sgsd[dove] > cosa){
+                        fine = medio-1;
+                    } else {
+                        inizio = medio+1;
+                    }
+                }
+            }
+            return -1;
+        };
+
+        System.out.println("☕️ java17 ☕️");
+        
+        List<String> lines = Files.readAllLines(Paths.get("puzzle.txt"), StandardCharsets.UTF_8);
+        Tessera[] tutteLeTessere = null;
+        int h=0,w=0,inserimento=0;
+        boolean iniziato = false;
+        start = System.currentTimeMillis();
+        for(int i=0;i<lines.size();i++) {
+            String p[] = lines.get(i).trim().split(" ");
+            if( iniziato ) {
+                Tessera t = new Tessera(
+                        Integer.parseInt(p[0]),
+                        Integer.parseInt(p[1]),
+                        Integer.parseInt(p[2]),
+                        Integer.parseInt(p[3]),
+                        p.length==5 ? p[4] : null
+                );
+                tutteLeTessere[inserimento] = t;
+                inserimento++;
+            }
+            if(p[0].equals("h")) {
+                h = Integer.parseInt( lines.get(++i) );
+            }
+            if(p[0].equals("w")) {
+                w = Integer.parseInt( lines.get(++i) );
+                tutteLeTessere = new Tessera[h*w];
+                iniziato = true;
+            }
+        }
+        stop = System.currentTimeMillis();
+        System.out.println("file parsing: "+ (stop-start));
+
+        start = System.currentTimeMillis();
+        Tessera oUnder[] = Arrays.copyOf(tutteLeTessere,tutteLeTessere.length);
+        Arrays.sort(oUnder, (o1, o2) -> o1.sgsd[1] - o2.sgsd[1] );
+        Tessera oRight[] = Arrays.copyOf(tutteLeTessere,tutteLeTessere.length);
+        Arrays.sort(oRight, (o1, o2) -> o1.sgsd[3] - o2.sgsd[3] );
+        Tessera oUpper[] = Arrays.copyOf(tutteLeTessere,tutteLeTessere.length);
+        Arrays.sort(oUpper, (o1, o2) -> o1.sgsd[0] - o2.sgsd[0] );
+        stop = System.currentTimeMillis();
+        System.out.println("copy & sort: "+ (stop-start));
+
+        Cercatore ricerca = cBinaria;
+        System.out.println("ricerca: "+ (ricerca == cLineare ? "lineare" : "binaria") );
+
+        Tessera mappa[][] = new Tessera[h][w];
+        
+        start = System.currentTimeMillis();
+        for(int i=0;i<w*h;i++) {
+            Tessera candidato = tutteLeTessere[i];
+            if(ricerca.cerca(oRight,3,candidato.sgsd[2])==-1 && ricerca.cerca(oUnder, 1, candidato.sgsd[0])==-1 ){
+                mappa[0][0] = candidato;
+            }
+        }
+        stop = System.currentTimeMillis();
+        System.out.println("angolo: "+ (stop-start));
+
+        start = System.currentTimeMillis();
+        for(int i=1;i<w;i++) {
+            for(int c=0;c<w*h;c++) {
+                Tessera candidato = tutteLeTessere[c];
+                if(candidato.sgsd[2] == mappa[0][i-1].sgsd[3] && ricerca.cerca(oUnder,1,candidato.sgsd[0])==-1 ){
+                    mappa[0][i] = candidato;
+                }
+            }
+        }
+        stop = System.currentTimeMillis();
+        System.out.println("linea zero: "+ (stop-start));
+
+        start = System.currentTimeMillis();
+        for(int iRiga=1; iRiga<h; iRiga++) {
+            for(int iColonna=0; iColonna<w; iColonna++) {
+                mappa[iRiga][iColonna] = oUpper[ ricerca.cerca(oUpper,0,mappa[iRiga-1][iColonna].sgsd[1]) ];
+            }
+        }
+        stop = System.currentTimeMillis();
+        System.out.println("mappa: "+ (stop-start));
+        
+        for(int iR=0; iR<h; iR++) {
+            for(int iC=0; iC<w; iC++) {
+                System.out.print(mappa[iR][iC].incisione != null ? mappa[iR][iC].incisione : "");
+            }
+        }
+        System.out.println();
+    }
+}

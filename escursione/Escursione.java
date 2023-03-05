@@ -18,8 +18,8 @@ public class Escursione {
         // archi verso avanti ( relativi indietro)
         for (int i = 0; i < X; i++) {
             for (int j = 0; j < Y-1; j++) {
-                int da = (i*Y)+j;  // c'era una X
-                int a = (i*Y)+j+1;  // c'era un X
+                int da = (i*Y)+j;
+                int a = (i*Y)+j+1;
 
                 int peso = Math.abs(V[i][j] - V[i][j+1]);
                 new Arco(da, a, peso);

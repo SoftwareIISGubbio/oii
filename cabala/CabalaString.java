@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class Cabala {
+public class CabalaString {
 
     public long solve(int N, int M) {
         // N è il numero di cifre di C
@@ -9,9 +9,9 @@ public class Cabala {
         // trovare un numero C che ha resto massimo mod M tale che
         // C composto solo dalle cifre 3,6,9
         // C non ha due cifre uguali in fila
-        long n3 = combina(M,N,1,3) % M; 
-        long n6 = combina(M,N,1,6) % M;
-        long n9 = combina(M,N,1,9) % M;
+        long n3 = combina(M,N, "3") % M; 
+        long n6 = combina(M,N, "6") % M;
+        long n9 = combina(M,N, "9") % M;
         if(n3 > n6){
             return n3 > n9 ? n3 :n9;
         }else{
@@ -19,23 +19,23 @@ public class Cabala {
         }
     }
 
-    private long combina(int M, int N, int step, long n){
-        if(step==N){
-            return n; 
+    private long combina(int M, int N, String n){
+        if(n.length()==N){
+            return Long.parseLong(n); 
         } else {
-            long ultima = n%10;
+            char ultima = n.charAt(n.length()-1);
             long n1=0,n2=0;
-            if(ultima==3){
-                n1 = combina(M, N, step+1, n*10+6);
-                n2 = combina(M, N, step+1, n*10+9);
+            if(ultima=='3'){
+                n1 = combina(M, N, n+6);
+                n2 = combina(M, N, n+9);
             }
-            if(ultima==6){
-                n1 = combina(M, N, step+1, n*10+3);
-                n2 = combina(M, N, step+1, n*10+9);
+            if(ultima=='6'){
+                n1 = combina(M, N, n+3);
+                n2 = combina(M, N, n+9);
             }
-            if(ultima==9){
-                n1 = combina(M, N, step+1, n*10+3);
-                n2 = combina(M, N, step+1, n*10+6);
+            if(ultima=='9'){
+                n1 = combina(M, N, n+3);
+                n2 = combina(M, N, n+6);
             }
             return n1%M > n2%M ? n1 : n2;
         }
@@ -58,7 +58,7 @@ public class Cabala {
             int M = scn.nextInt();
 
 
-            Cabala solver = new Cabala();
+            CabalaString solver = new CabalaString();
             long risposta = solver.solve(N, M);
 
             prnt.format("Case #%d: %d\n", t,risposta);

@@ -9,20 +9,23 @@ public class Mostra {
 
     /** @return massimo guadagno possibile */
     public int solve(int V[], int G[]) {
-        this.V = new int[V.length+G.length];
-        for(int i=0; i<G.length; i++){
-            this.V[i] = 50000000;
-        }
-        for(int i=0; i<V.length; i++){
-            this.V[i+G.length] = V[i];
-        }
+        this.V = V;
         this.G = G;
-        mem = new int[this.V.length][G.length];
-        return rec(0,0)-G.length;
+        mem = new int[V.length][G.length];
+        return rec(0,0);
     }
 
+    private static int max3(int i1, int i2, int i3){
+        if(i1>i2){
+            return i1>i3 ? i1 : i3;
+        } else {
+            return i2>i3 ? i2 : i3;
+        }
+    }
+
+    /** provo tutte le soluzioni, solo che mi segno 
+     man mano i rtisultqati che trovo "per usi futuri" */
     public int rec(int posV, int posG){
-        // System.out.println(posV+" "+posG);
         if(posV>=V.length){ // finiti i visitatori
             return 0;
         }        
@@ -31,28 +34,30 @@ public class Mostra {
         }
         int costoPrendo;
         int costoNo;
-        /*if(mem[posV][posG]!=0)
-            return mem[posV][posG]; */
-        // prendo
-        if(posG<G.length){
-            int x = V[posV]<G[posG] ? 2 : 1;
-            int resto = rec(posV+1,posG+1);
-            // System.out.println("    "+x );
-            costoPrendo = x + resto;
-        } else {
-            // non la prendo che l'ho finite
-            costoPrendo = V.length - posV;
-        }
-        // oppure no
+        int costoSalto;
+        // prova a togliere le due righe sotto poi vedi i tempi!
+        if(mem[posV][posG]!=0)
+            return mem[posV][posG];
+        
+        // prendo la guida
+        int x = V[posV]<G[posG] ? 2 : 1;
+        int resto = rec(posV+1,posG+1);
+        costoPrendo = x + resto;
+        
+        // NON prendo la guida
         costoNo = 1 + rec(posV+1, posG);
-        mem[posV][posG] = costoPrendo>costoNo ? costoPrendo : costoNo;
+
+        // salto questa guida
+        costoSalto = rec(posV, posG+1);
+
+        mem[posV][posG] = max3(costoPrendo, costoNo, costoSalto);
         return mem[posV][posG];
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
         // InputStream fin = new FileInputStream("ix.txt");
-        InputStream fin = new FileInputStream("input.txt");
-        // InputStream fin = new FileInputStream("mostra_input_1.txt");
+        // InputStream fin = new FileInputStream("input.txt");
+        InputStream fin = new FileInputStream("mostra_input_1.txt");
         OutputStream fout = new FileOutputStream("output.txt");
         
         Scanner scn = new Scanner(fin);

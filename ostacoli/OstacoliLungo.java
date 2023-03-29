@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class Ostacoli {
+public class OstacoliLungo {
     int[] posizione;
     int[] punti;
     int[] tempo;
@@ -15,41 +15,57 @@ public class Ostacoli {
         this.tempo = S;
         this.tempoTotale = D;
 
-        memoria = new int[N][N];
+        memoria = new int[N+1][N+1];
+        for(int i=0;i<N+1;i++){
+            for(int j=0;j<N+1;j++){
+                memoria[i][j]=-1;
+            }   
+        }
         System.out.println(N+" "+L+" "+D+"=========");
-        int risposta = calcola("", 0, 0, 0, 0, 0);
+        int risposta = calcola(0, 0, 0, 0, 0);
 
         return risposta;
     }
 
     private int calcola(
-        String s,
         int attualePunteggio,
         int attualePosizione,
         int attualeTempo,
         int indiceProssimo,
-        int attualeIndice // FIXME mica tanto chiaro
+        int attualeIndice
     ){
-        int puntiPrendo=0, puntiIgnoro;
+        int max;
+        int puntiSalto, puntiIgnoro, puntiI;
 
         int risposta;
 
-        // System.out.println(s+" "+attualePunteggio);
-
-        if(attualeTempo>=tempoTotale || indiceProssimo==posizione.length ){
+        if(attualeTempo>=tempoTotale){
             risposta = attualePunteggio;
         } else {
-            if(memoria[attualeIndice][indiceProssimo] > 0)
+
+            if(memoria[attualeIndice][indiceProssimo] > -1)
                 return memoria[attualeIndice][indiceProssimo];
-            
-            int deltaT = tempo[indiceProssimo] - attualeTempo;
-            int deltaP = Math.abs( posizione[indiceProssimo] - attualePosizione );
-            if(deltaP<=deltaT){
-                puntiPrendo = punti[indiceProssimo] + calcola(s+" ",0, posizione[indiceProssimo], tempo[indiceProssimo], indiceProssimo+1, indiceProssimo);
+
+            // scandaglio tutti i prossimi ostacoli
+            max = 0;
+            for(int i=indiceProssimo; i<posizione.length; i++){
+                int deltaT = tempo[i] - attualeTempo;
+                int deltaP = Math.abs( posizione[i] - attualePosizione );
+                if(deltaP<=deltaT){
+                    // lo salto
+                    puntiSalto = punti[i] + calcola(0, posizione[i], tempo[i], i+1, i);
+                    // lo ignoro
+                    puntiIgnoro = calcola(0, attualePosizione, attualeTempo, i+1, attualeIndice);
+                    puntiI = Math.max(puntiSalto, puntiIgnoro);
+                } else {
+                    // non ci arrivo, non lo salto
+                    puntiI = calcola(0, attualePosizione, attualeTempo, i+1, attualeIndice);
+                }
+                if(puntiI>max){
+                    max = puntiI;
+                }
             }
-            puntiIgnoro = calcola(s+" ",0, attualePosizione, attualeTempo, indiceProssimo+1, attualeIndice);
-            
-            risposta = attualePunteggio + Math.max(puntiPrendo, puntiIgnoro);
+            risposta = attualePunteggio + max;
             memoria[attualeIndice][indiceProssimo] = risposta;
         }
         return risposta;
@@ -89,7 +105,7 @@ public class Ostacoli {
                 S[i] = scn.nextInt();
             }
 
-            Ostacoli solver = new Ostacoli();
+            OstacoliLungo solver = new OstacoliLungo();
             int risposta = solver.solve(N, L, D, X, P, S);
 
             prnt.format("Case #%d: %d\n", t, risposta);

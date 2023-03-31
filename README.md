@@ -1,4 +1,5 @@
-# possibili soluzioni per le 
+# tentativi per *oii*
+possibili soluzioni per le 
 [Territoriali delle Olimpiadi Ialiane dell'Informatica](https://www.olimpiadi-informatica.it/)
 
 ## programmazione dinamica

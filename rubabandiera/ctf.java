@@ -3,147 +3,33 @@ import java.io.*;
 
 public class ctf {
 
-    public static void dump(boolean v[]){
-        String k = "";
-        for(int i=0;i<v.length; i++){
-            k += v[i] ? "B" : "_";
+    // quello sotto è solo un gioco, non è necessatrio funzionan anche con Math.log
+    public int log2(long n){
+        int log=0;
+        while(n>1){
+            n>>=1;
+            log++;
         }
-        System.out.println(k);
+        return log;
     }
 
-    // usa bandiere[x]=true per segnare i morti!
-    public int solveN(int N) {
-        bandiere = new boolean[N];
-        return altroGiroN(0, 1);
+    static double l2 = Math.log(2);
+    public long solveLog(long N) {
+        // long pot = (long)(Math.log(N)/l2);
+        long pot = log2(N);
+        // long num = N-(long)Math.pow(2,pot);
+        long num = N-(1L<<pot);
+        return 2*num+1;
     }
 
-    int altroGiroN(int ladroPossibile, int passo){
-        int ladro=ladroPossibile;
-        int prossimo;
-        
-        if(passo>bandiere.length/2){
-            return ladro;
-        }
-        int i;
-        for(i=ladro;i<bandiere.length-passo; i+=passo*2){
-            bandiere[i+passo] = true;
-        }
-        if(i>=bandiere.length){
-            // ho finito il giro
-            prossimo=0;
-            while(bandiere[prossimo]==true){
-                prossimo++;
-            }
-        } else {
-            // perché il ladro sta in fondo al vettore e tocca fare il giro
-            int bersaglio = 0;
-            while(bandiere[bersaglio]==true){
-                bersaglio++;
-            }
-            bandiere[bersaglio]=true;
-            // cerco prossimo ladro
-            prossimo=bersaglio+1;
-            while(bandiere[prossimo]==true){
-                prossimo++;
-            }
-        }
-        return altroGiroN(prossimo,passo*2);
-    } 
-
-    boolean bandiere[];
-    public int solveX(int N) {
-        bandiere = new boolean[N];
-        for(int i=0 ; i<bandiere.length ; i++){
-            bandiere[i] = true;
-        }
-        return altroGiro(0, 1);
-    }
-
-    int altroGiro(int ladroPossibile, int passo){
-        int ladro=ladroPossibile;
-        int prossimo;
-        
-        if(passo>bandiere.length/2){
-            return ladro;
-        }
-        // non mangio l'ultimo
-        int i;
-        for(i=ladro;i<bandiere.length-passo; i+=passo*2){
-            bandiere[i+passo] = false;
-        }
-        if(i>=bandiere.length){
-            // ho finito il giro
-            prossimo=0;
-            while(bandiere[prossimo]==false){
-                prossimo++;
-            }
-        } else {
-            // perché il ladro sta in fondo al vettore e tocca fare il giro
-            int bersaglio = 0;
-            while(bandiere[bersaglio]==false){
-                bersaglio++;
-            }
-            bandiere[bersaglio]=false;
-            // cerco prossimo ladro
-            prossimo=bersaglio+1;
-            while(bandiere[prossimo]==false){
-                prossimo++;
-            }
-        }
-        return altroGiro(prossimo,passo*2);
-    } 
-
-    public int solvePariPari(int N) {
-        boolean bandiere[] = new boolean[N];
-        for(int i=0 ; i<bandiere.length-1 ; i+=2){
-            bandiere[i] = true;
-            bandiere[i+1] = false;
-        }
-        int turni,ladro,bersaglio;
-        if(bandiere.length%2==0){
-            ladro = 0;
-            turni=bandiere.length/2-1;
-        }else{
-            bandiere[bandiere.length-1]=true;
-            ladro = bandiere.length-1;
-            turni=bandiere.length/2;
-        }
-        for(int turno=0; turno<turni; turno++){
-            // dump(bandiere);
-            while(bandiere[ladro]==false){
-                ladro = (ladro+1)%bandiere.length;
-            }
-            bersaglio = (ladro+1)%bandiere.length;
-            while(bandiere[bersaglio]==false){
-                bersaglio = (bersaglio+1)%bandiere.length;
-            }
-            bandiere[bersaglio]=false;
-            ladro = (bersaglio+1)%bandiere.length;
-        }
-        // dump(bandiere);
-        while(bandiere[ladro]==false){
-            ladro = (ladro+1)%bandiere.length;
-        }
-        return ladro;
-    }
-
-    public int solveScanu(int N) {
-        ArrayList<Integer> bandiere = new ArrayList<>();
-        for(int i=0 ; i<N ; i++){
-            bandiere.add(i);
-        }
-        int ladro = 0, bersaglio;
-        for(int i=0 ; i<N-1 ; i++){
-            bersaglio = (ladro+1)%bandiere.size();
-            // System.out.println(bandiere.get(ladro) +"->"+bandiere.get(bersaglio));
-            bandiere.remove(bersaglio);
-            if(bersaglio>ladro){
-                ladro = (ladro+1)%bandiere.size();
-            }else{
-                ladro = (ladro)%bandiere.size();
-            }
-        }
-        return bandiere.get(0);
+    public long solveLogF(long N) {
+        long pot=1;
+        while(pot<=N){
+            pot*=2;
+        };
+        pot/=2;
+        long num = N-pot;
+        return 2*num+1;
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -167,12 +53,13 @@ public class ctf {
 
         int T = scn.nextInt();
         for(int t = 1; t <= T; t++) {
-            int N = scn.nextInt();
+            long N = scn.nextLong();
 
             ctf solver = new ctf();
-            int risposta = solver.solveN(N);
+            long risposta = solver.solveLog(N);
 
-            prnt.format("%d\n", risposta+1);
+            // prnt.format("%d\n", risposta);
+            prnt.println(risposta);
             fout.flush();
         }
     }
